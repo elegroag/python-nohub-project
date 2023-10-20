@@ -1,29 +1,30 @@
-#database
+# database
 import mysql.connector
 from decouple import config
 from mysql.connector import errorcode
 
-class Db:
 
+class Db:
     def __init__(self):
         pass
 
     def connectMysql(self):
         cnx = mysql.connector.connect(
-            user= config('MYSQL_USER'), 
-            host= config('MYSQL_HOST'), 
-            database= config('MYSQL_DATABASE'), 
-            password= config('MYSQL_PASSWORD'), 
-            port= config('MYSQL_PORT')
+            user=config("MYSQL_USER"),
+            host=config("MYSQL_HOST"),
+            database=config("MYSQL_DATABASE"),
+            password=config("MYSQL_PASSWORD"),
+            port=config("MYSQL_PORT"),
         )
         return cnx
 
     def readQuery(self):
-        cnx = self.connectMysql() 
+        cnx = self.connectMysql()
         try:
             if cnx and cnx.is_connected():
                 cursor = cnx.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT 
                         co.usuario, 
                         co.progreso, 
@@ -33,13 +34,18 @@ class Db:
                         co.parametros, 
                         co.resultado, 
                         co.id, 
-                        ce.procesador as ps  
+                        ce.procesador as ps 
                     FROM comandos co 
                     INNER JOIN comando_estructuras as ce ON ce.id = co.estructura 
-                    WHERE ce.asyncro = 3 and co.estado='P' 
+                    WHERE 
+                    ce.asyncro = 3 and 
+                    co.estado = 'P' and 
+                    co.fecha_runner = CURRENT_DATE() and 
+                    co.hora_runner >= CURRENT_TIME() 
+                    ORDER BY co.fecha_runner, co.hora_runner ASC
                     LIMIT 10 """
                 )
-                records  = cursor.fetchall()
+                records = cursor.fetchall()
                 print("Total number of rows in table: ", cursor.rowcount)
                 _list = []
                 for row in records:
@@ -52,11 +58,11 @@ class Db:
                         "parametros": row[5],
                         "resultado": row[6],
                         "id": row[7],
-                        "ps": row[8]
+                        "ps": row[8],
                     }
                     _list.append(_dict)
                 return _list
-            else :
+            else:
                 print("No conection")
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
@@ -70,17 +76,21 @@ class Db:
             if cnx.is_connected():
                 cnx.close()
                 cursor.close()
-                # print("MySQL Close")      
+                # print("MySQL Close")
 
     def updateQuery(self, _id, _estado):
-        cnx = self.connectMysql() 
+        cnx = self.connectMysql()
         try:
             if cnx and cnx.is_connected():
                 cursor = cnx.cursor()
-                cursor.execute("UPDATE comandos SET estado='{0}' WHERE id='{1}'".format(_estado, _id))
+                cursor.execute(
+                    "UPDATE comandos SET estado='{0}' WHERE id='{1}'".format(
+                        _estado, _id
+                    )
+                )
                 print("Update Ok")
                 return cursor.rowcount
-            else :
+            else:
                 print("No conection")
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
@@ -94,4 +104,4 @@ class Db:
             if cnx.is_connected():
                 cnx.close()
                 cursor.close()
-                # print("MySQL Close")        
+                # print("MySQL Close")
