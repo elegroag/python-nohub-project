@@ -55,10 +55,11 @@ MYSQL_PORT= ...
 MYSQL_DATABASE= ...
 ```
 
-Add command crontab
+Add command crontab  
+Every 5 minutes the script must be executed
 
 ```sh
-* 2 0 * 4 /home/python/env/bin/python3 /home/python/main.py
+10 * * * * /home/python/env/bin/python3 /home/python/main.py
 ```
 
 Check crontab run
