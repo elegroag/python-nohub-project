@@ -1,5 +1,6 @@
 #database
 import mysql.connector
+from decouple import config
 from mysql.connector import errorcode
 
 class Db:
@@ -9,11 +10,11 @@ class Db:
 
     def connectMysql(self):
         cnx = mysql.connector.connect(
-            user='root', 
-            host='', 
-            database='', 
-            password='', 
-            port=''
+            user= config('MYSQL_USER'), 
+            host= config('MYSQL_HOST'), 
+            database= config('MYSQL_DATABASE'), 
+            password= config('MYSQL_PASSWORD'), 
+            port= config('MYSQL_PORT')
         )
         return cnx
 
